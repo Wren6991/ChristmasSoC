@@ -33,10 +33,10 @@ module chistmas_soc #(
 
 	parameter CACHE_SIZE_BYTES = 1 << 12
 ) (
-	input wire clk_sys,
+	input  wire              clk_sys,
 
 	// Power-on reset, including debug hardware. Resynchronised internally. 
-	input wire rst_n_por,
+	input  wire              rst_n_por,
 
 	// JTAG port to RISC-V JTAG-DTM
 	input  wire              tck,
@@ -68,7 +68,7 @@ wire assert_dmi_reset = !rst_n_por || dmihardreset_req;
 wire rst_n_dmi;
 
 reset_sync dmi_reset_sync_u (
-	.clk       (clk),
+	.clk       (clk_sys),
 	.rst_n_in  (!assert_dmi_reset),
 	.rst_n_out (rst_n_dmi)
 );
@@ -77,7 +77,7 @@ reset_sync dmi_reset_sync_u (
 wire rst_n_dm;
 
 reset_sync dm_reset_sync_u (
-	.clk       (clk),
+	.clk       (clk_sys),
 	.rst_n_in  (rst_n_por),
 	.rst_n_out (rst_n_dm)
 );
@@ -100,7 +100,7 @@ if (DTM_TYPE == "JTAG") begin
 
 		.dmihardreset_req (dmihardreset_req),
 
-		.clk_dmi          (clk),
+		.clk_dmi          (clk_sys),
 		.rst_n_dmi        (rst_n_dmi),
 
 		.dmi_psel         (dmi_psel),
@@ -125,7 +125,7 @@ end else if (DTM_TYPE == "ECP5") begin
 	hazard3_ecp5_jtag_dtm dtm_u (
 		.dmihardreset_req (dmihardreset_req),
 
-		.clk_dmi          (clk),
+		.clk_dmi          (clk_sys),
 		.rst_n_dmi        (rst_n_dmi),
 
 		.dmi_psel         (dmi_psel),
@@ -169,7 +169,7 @@ hazard3_dm #(
 	.N_HARTS      (N_HARTS),
 	.NEXT_DM_ADDR (0)
 ) dm (
-	.clk                         (clk),
+	.clk                         (clk_sys),
 	.rst_n                       (rst_n_dm),
 
 	.dmi_psel                    (dmi_psel),
@@ -337,12 +337,12 @@ localparam MULDIV_UNROLL   = 1;
 
 // MUL_FAST: Use single-cycle multiply circuit for MUL instructions, retiring
 // to stage M. The sequential multiply/divide circuit is still used for MULH*
-localparam MUL_FAST        = 0;
+localparam MUL_FAST        = 1;
 
 // MULH_FAST: extend the fast multiply circuit to also cover MULH*, and remove
 // the multiply functionality from the sequential multiply/divide circuit.
 // Requires; MUL_FAST
-localparam MULH_FAST       = 1;
+localparam MULH_FAST       = 0;
 
 // MTVEC_WMASK: Mask of which bits in MTVEC are modifiable. Save gates by
 // making trap vector base partly fixed (legal, as it's WARL).
@@ -746,18 +746,18 @@ ahb_sync_sram #(
 ) cpu1_tcm (
 	.clk               (clk_sys),
 	.rst_n             (rst_n_sys),
-	.ahbls_hready_resp (cpu0_to_tcm_hready_resp),
-	.ahbls_hready      (cpu0_to_tcm_hready),
-	.ahbls_hresp       (cpu0_to_tcm_hresp),
-	.ahbls_haddr       (cpu0_to_tcm_haddr),
-	.ahbls_hwrite      (cpu0_to_tcm_hwrite),
-	.ahbls_htrans      (cpu0_to_tcm_htrans),
-	.ahbls_hsize       (cpu0_to_tcm_hsize),
-	.ahbls_hburst      (cpu0_to_tcm_hburst),
-	.ahbls_hprot       (cpu0_to_tcm_hprot),
-	.ahbls_hmastlock   (cpu0_to_tcm_hmastlock),
-	.ahbls_hwdata      (cpu0_to_tcm_hwdata),
-	.ahbls_hrdata      (cpu0_to_tcm_hrdata)
+	.ahbls_hready_resp (cpu1_to_tcm_hready_resp),
+	.ahbls_hready      (cpu1_to_tcm_hready),
+	.ahbls_hresp       (cpu1_to_tcm_hresp),
+	.ahbls_haddr       (cpu1_to_tcm_haddr),
+	.ahbls_hwrite      (cpu1_to_tcm_hwrite),
+	.ahbls_htrans      (cpu1_to_tcm_htrans),
+	.ahbls_hsize       (cpu1_to_tcm_hsize),
+	.ahbls_hburst      (cpu1_to_tcm_hburst),
+	.ahbls_hprot       (cpu1_to_tcm_hprot),
+	.ahbls_hmastlock   (cpu1_to_tcm_hmastlock),
+	.ahbls_hwdata      (cpu1_to_tcm_hwdata),
+	.ahbls_hrdata      (cpu1_to_tcm_hrdata)
 );
 
 wire [W_ADDR-1:0] cache_dst_haddr;

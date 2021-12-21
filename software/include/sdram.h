@@ -30,7 +30,7 @@ static inline void sdram_init_seq() {
 	mm_sdram_ctrl->csr = SDRAM_CSR_PU_MASK;
 	delay_us(10);
 	// PrechargeAll, 3 refreshes
-	mm_sdram_ctrl->cmd_direct = SDRAM_CMD_PRECHARGE | (1u << SDRAM_CMD_DIRECT_ADDR_LSB + 10);
+	mm_sdram_ctrl->cmd_direct = SDRAM_CMD_PRECHARGE | 1u << (SDRAM_CMD_DIRECT_ADDR_LSB + 10);
 	delay_us(10);
 	for (int i = 0; i < 3; ++i)	{
 		mm_sdram_ctrl->cmd_direct = SDRAM_CMD_REFRESH;

@@ -27,8 +27,7 @@ module chistmas_soc #(
 	// through the FPGA's own JTAG.
 	parameter DTM_TYPE         = "JTAG",
 
-	// TCMs are 32b wide, so DEPTH = 1 << 10  ->  4 kiB memory.
-	parameter TCM_DEPTH        = 1 << 10,
+	parameter TCM_SIZE_BYTES   = 1 << 12,
 	parameter TCM_PRELOAD_FILE = "",
 
 	parameter CACHE_SIZE_BYTES = 1 << 12,
@@ -739,7 +738,7 @@ ahbl_arbiter #(
 ahb_sync_sram #(
 	.W_DATA       (W_DATA),
 	.W_ADDR       (W_ADDR),
-	.DEPTH        (TCM_DEPTH),
+	.DEPTH        (TCM_SIZE_BYTES / (W_DATA / 8)),
 	.PRELOAD_FILE (TCM_PRELOAD_FILE)
 ) cpu0_tcm (
 	.clk               (clk_sys),
@@ -761,7 +760,7 @@ ahb_sync_sram #(
 ahb_sync_sram #(
 	.W_DATA       (W_DATA),
 	.W_ADDR       (W_ADDR),
-	.DEPTH        (TCM_DEPTH),
+	.DEPTH        (TCM_SIZE_BYTES / (W_DATA / 8)),
 	.PRELOAD_FILE (TCM_PRELOAD_FILE)
 ) cpu1_tcm (
 	.clk               (clk_sys),

@@ -1,0 +1,57 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Tue Dec 21 22:51:11 2021
+[*]
+[dumpfile] "/home/luke/proj/christmas_soc/sim/tb/run.vcd"
+[dumpfile_mtime] "Tue Dec 21 22:43:40 2021"
+[dumpfile_size] 91029159
+[savefile] "/home/luke/proj/christmas_soc/sim/tb/sdram.gtkw"
+[timestart] 5264
+[size] 2263 2123
+[pos] -1 -1
+*-4.000000 5406 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 233
+[signals_width] 182
+[sst_expanded] 1
+[sst_vpaned_height] 674
+@200
+-SDRAM Signals
+@28
+sdram_clk
+@22
+sdram_a[12:0]
+@28
+sdram_ba[1:0]
+sdram_dqm[1:0]
+@200
+-
+@28
+sdram_clke
+sdram_cs_n
+sdram_ras_n
+sdram_cas_n
+sdram_we_n
+@200
+-
+@22
+sdram_dq_o[15:0]
+@23
+sdram_dq_i[15:0]
+@200
+-
+-SDRAM Model
+@22
+sdram.sdram_cmd[3:0]
+sdram.bank_addr[0][12:0]
+sdram.burst_count[7:0]
+@28
+sdram.sdram_clke
+sdram.burst_is_write
+@22
+sdram.burst_addr[24:0]
+sdram.mem[0][15:0]
+sdram.mem[1][15:0]
+sdram.rdata[15:0]
+sdram.dq_i_delay[0][15:0]
+[pattern_trace] 1
+[pattern_trace] 0

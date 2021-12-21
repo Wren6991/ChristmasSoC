@@ -247,11 +247,12 @@ int main(int argc, char **argv) {
 	for (int64_t cycle = 0; cycle < max_cycles || max_cycles == 0; ++cycle) {
 		top.p_clk__sys.set<bool>(false);
 		top.step();
+		top.step(); // workaround for github.com/YosysHQ/yosys/issues/2780
 		if (dump_waves)
 			vcd.sample(cycle * 2);
 		top.p_clk__sys.set<bool>(true);
 		top.step();
-		top.step(); // workaround for github.com/YosysHQ/yosys/issues/2780
+		top.step();
 
 		// If --port is specified, we run the simulator in lockstep with the
 		// remote bitbang commands, to get more consistent simulation traces.

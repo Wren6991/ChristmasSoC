@@ -31,23 +31,43 @@ module chistmas_soc #(
 	parameter TCM_DEPTH        = 1 << 10,
 	parameter TCM_PRELOAD_FILE = "",
 
-	parameter CACHE_SIZE_BYTES = 1 << 12
-) (
-	input  wire              clk_sys,
+	parameter CACHE_SIZE_BYTES = 1 << 12,
 
-	// Power-on reset, including debug hardware. Resynchronised internally. 
-	input  wire              rst_n_por,
+	parameter W_SDRAM_DATA     = 16,
+	parameter W_SDRAM_ADDR     = 13,
+	parameter W_SDRAM_BANKSEL  = 2
+) (
+	input  wire                       clk_sys,
+
+	// Power-on reset, including debug hardware. Resynchronised internally.
+	input  wire                       rst_n_por,
 
 	// JTAG port to RISC-V JTAG-DTM
-	input  wire              tck,
-	input  wire              trst_n,
-	input  wire              tms,
-	input  wire              tdi,
-	output wire              tdo,
+	input  wire                       tck,
+	input  wire                       trst_n,
+	input  wire                       tms,
+	input  wire                       tdi,
+	output wire                       tdo,
+
+	// SDRAM "PHY" interface (tristate avoidance)
+	output wire                       sdram_phy_clk_enable,
+	output wire [W_SDRAM_BANKSEL-1:0] sdram_phy_ba_next,
+	output wire [W_SDRAM_ADDR-1:0]    sdram_phy_a_next,
+	output wire [W_SDRAM_DATA/8-1:0]  sdram_phy_dqm_next,
+
+	output wire [W_SDRAM_DATA-1:0]    sdram_phy_dq_o_next,
+	output wire                       sdram_phy_dq_oe_next,
+	input  wire [W_SDRAM_DATA-1:0]    sdram_phy_dq_i,
+
+	output wire                       sdram_phy_clke_next,
+	output wire                       sdram_phy_cs_n_next,
+	output wire                       sdram_phy_ras_n_next,
+	output wire                       sdram_phy_cas_n_next,
+	output wire                       sdram_phy_we_n_next,
 
 	// IO
-	output wire              uart_tx,
-	input  wire              uart_rx
+	output wire                       uart_tx,
+	input  wire                       uart_rx
 );
 
 // ----------------------------------------------------------------------------
@@ -779,7 +799,7 @@ ahb_cache_writeback #(
 	.W_DATA         (W_DATA               ),
 	.W_LINE         (128                  ), // 8-beat bursts on 16b SDRAM bus. Minimum efficient burst.
 	.DEPTH          (CACHE_SIZE_BYTES / 16)
-) inst_ahb_cache_writeback (
+) cache_u (
 	.clk             (clk_sys),
 	.rst_n           (rst_n_sys),
 
@@ -1003,6 +1023,8 @@ apb_splitter #(
 // ----------------------------------------------------------------------------
 // Peripherals
 
+wire uart_irq;
+
 // Error response on currently-empty ports
 
 assign spi_prdata    = 32'h00000000;
@@ -1013,13 +1035,62 @@ assign timer_prdata  = 32'h00000000;
 assign timer_pready  = 1'b1;
 assign timer_pslverr = 1'b1;
 
-assign sdram_prdata  = 32'h00000000;
-assign sdram_pready  = 1'b1;
-assign sdram_pslverr = 1'b1;
-
 assign gpio_prdata   = 32'h00000000;
 assign gpio_pready   = 1'b1;
 assign gpio_pslverr  = 1'b1;
+
+ahbl_sdram #(
+	.COLUMN_BITS     (10),
+	.ROW_BITS        (13),
+	.W_SDRAM_BANKSEL (W_SDRAM_BANKSEL),
+	.W_SDRAM_ADDR    (W_SDRAM_ADDR),
+	.W_SDRAM_DATA    (W_SDRAM_DATA),
+	.N_MASTERS       (1),
+	.LEN_AHBL_BURST  (4),
+	.FIXED_TIMINGS   (0),
+	.W_HADDR         (W_ADDR),
+	.W_HDATA         (W_DATA)
+) sdram_u (
+	.clk               (clk_sys),
+	.rst_n             (rst_n_sys),
+
+	.phy_clk_enable    (sdram_phy_clk_enable),
+	.phy_ba_next       (sdram_phy_ba_next),
+	.phy_a_next        (sdram_phy_a_next),
+	.phy_dqm_next      (sdram_phy_dqm_next),
+
+	.phy_dq_o_next     (sdram_phy_dq_o_next),
+	.phy_dq_oe_next    (sdram_phy_dq_oe_next),
+	.phy_dq_i          (sdram_phy_dq_i),
+
+	.phy_clke_next     (sdram_phy_clke_next),
+	.phy_cs_n_next     (sdram_phy_cs_n_next),
+	.phy_ras_n_next    (sdram_phy_ras_n_next),
+	.phy_cas_n_next    (sdram_phy_cas_n_next),
+	.phy_we_n_next     (sdram_phy_we_n_next),
+
+	.apbs_psel         (sdram_psel),
+	.apbs_penable      (sdram_penable),
+	.apbs_pwrite       (sdram_pwrite),
+	.apbs_paddr        (sdram_paddr),
+	.apbs_pwdata       (sdram_pwdata),
+	.apbs_prdata       (sdram_prdata),
+	.apbs_pready       (sdram_pready),
+	.apbs_pslverr      (sdram_pslverr),
+
+	.ahbls_hready      (sdram_hready),
+	.ahbls_hready_resp (sdram_hready_resp),
+	.ahbls_hresp       (sdram_hresp),
+	.ahbls_haddr       (sdram_haddr),
+	.ahbls_hwrite      (sdram_hwrite),
+	.ahbls_htrans      (sdram_htrans),
+	.ahbls_hsize       (sdram_hsize),
+	.ahbls_hburst      (sdram_hburst),
+	.ahbls_hprot       (sdram_hprot),
+	.ahbls_hmastlock   (sdram_hmastlock),
+	.ahbls_hwdata      (sdram_hwdata),
+	.ahbls_hrdata      (sdram_hrdata)
+);
 
 uart_mini uart_u (
 	.clk          (clk_sys),
@@ -1044,30 +1115,11 @@ uart_mini uart_u (
 
 assign irq = {31'h0, uart_irq};
 
-// "SDRAM" is currently just a larger AHB SRAM.
 
-ahb_sync_sram #(
-	.W_DATA       (W_DATA),
-	.W_ADDR       (W_ADDR),
-	.DEPTH        (1 << 16) // 256 kiB
-) definitely_sdram_lol (
-	.clk               (clk_sys),
-	.rst_n             (rst_n_sys),
-
-	.ahbls_hready_resp (sdram_hready_resp),
-	.ahbls_hready      (sdram_hready),
-	.ahbls_hresp       (sdram_hresp),
-	.ahbls_haddr       (sdram_haddr),
-	.ahbls_hwrite      (sdram_hwrite),
-	.ahbls_htrans      (sdram_htrans),
-	.ahbls_hsize       (sdram_hsize),
-	.ahbls_hburst      (sdram_hburst),
-	.ahbls_hprot       (sdram_hprot),
-	.ahbls_hmastlock   (sdram_hmastlock),
-	.ahbls_hwdata      (sdram_hwdata),
-	.ahbls_hrdata      (sdram_hrdata)
-);
 
 endmodule
 
+// ifndef is a workaround for https://github.com/YosysHQ/yosys/issues/1217
+`ifndef YOSYS
 `default_nettype wire
+`endif

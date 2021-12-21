@@ -8,5 +8,6 @@ list $HDL/libfpga/mem/ahb_cache.f
 list $HDL/libfpga/mem/ahb_sync_sram.f
 
 list $HDL/libfpga/peris/uart/uart.f
+list $HDL/libfpga/sdram/ahbl_sdram.f
 
 file $HDL/libfpga/common/reset_sync.v

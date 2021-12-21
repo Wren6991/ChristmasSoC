@@ -1,5 +1,6 @@
 #include "platform_defs.h"
 #include "uart.h"
+#include "sdram.h"
 
 const char *splash_text = "\n"
 "  ___ _        _    _                 ___       ___ \n"
@@ -8,6 +9,10 @@ const char *splash_text = "\n"
 " \\___|_||_|_| |_/__/\\__|_|_|_\\__,_/__/___/\\___/\\___|\n";
 
 void main() {
+	// Enable SDRAM immediately, before debugger attaches
+	if (!sdram_is_enabled())
+		sdram_init_seq();
+
 	uart_clkdiv_baud(CLK_SYS_MHZ, UART_BAUD);
 	uart_init();
 	uart_puts(splash_text);

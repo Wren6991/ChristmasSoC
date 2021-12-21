@@ -14,6 +14,83 @@
 
 // -----------------------------------------------------------------------------
 
+const float CLK_PERIOD = 1 / 40e6;
+const float BAUD_PERIOD = 1 / 3e6;
+
+class UARTRX {
+
+	float baud_period;
+	float time_accum;
+	int rx_phase;
+	uint8_t rx_data;
+	bool rx_data_valid;
+
+public:
+
+	UARTRX(float _baud_period) {
+		baud_period = _baud_period;
+		time_accum = 0;
+		rx_phase = 0;
+		rx_data = 0;
+		rx_data_valid = false;
+	}
+
+	void sample(bool rx_signal, float delta_t) {
+		time_accum += delta_t;
+		switch (rx_phase) {
+		case 0:
+			// Wait for start bit.
+			time_accum = 0;
+			if (!rx_signal)
+				rx_phase = 1;
+			break;
+		case 1:
+			// Check start bit, ignore frame if too narrow.
+			if (time_accum >= baud_period * 0.5f) {
+				time_accum -= baud_period * 0.5f;
+				if (rx_signal)
+					rx_phase = 0;
+				else
+					rx_phase = 2;
+			}
+			break;
+		case 2: // fall-through
+		case 3: // fall-through
+		case 4: // fall-through
+		case 5: // fall-through
+		case 6: // fall-through
+		case 7: // fall-through
+		case 8: // fall-through
+		case 9:
+			// Sample data bit in middle of baud period.
+			if (time_accum >= baud_period) {
+				time_accum -= baud_period;
+				rx_data = (rx_data >> 1) | ((uint8_t)rx_signal << 7);
+				++rx_phase;
+			}
+			break;
+		case 10:
+			// Data is valid only if stop bit is correct
+			if (time_accum >= baud_period * 0.5) {
+				rx_phase = 0;
+				rx_data_valid = rx_signal;
+			}
+			break;
+		}
+	}
+
+	bool rx_valid() {
+		return rx_data_valid;
+	}
+
+	char get_rx() {
+		rx_data_valid = false;
+		return (char)rx_data;;
+	}
+};
+
+// -----------------------------------------------------------------------------
+
 const char *help_str =
 "Usage: tb [--bin x.bin] [--vcd x.vcd] [--dump start end] [--cycles n] [--port n]\n"
 "    --bin x.bin      : Flat binary file loaded to address 0x0 in RAM\n"
@@ -140,6 +217,8 @@ int main(int argc, char **argv) {
 		printf("Connected\n");
 	}
 
+	UARTRX uart0(BAUD_PERIOD);
+
 	cxxrtl_design::p_tb top;
 
 	std::ofstream waves_fd;
@@ -238,6 +317,11 @@ int main(int argc, char **argv) {
 			vcd.sample(cycle * 2 + 1);
 			waves_fd << vcd.buffer;
 			vcd.buffer.clear();
+		}
+
+		uart0.sample(top.p_uart__tx.get<bool>(), CLK_PERIOD);
+		if (uart0.rx_valid()) {
+			putchar(uart0.get_rx());
 		}
 
 		// if (memio.exit_req) {

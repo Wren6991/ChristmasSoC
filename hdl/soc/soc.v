@@ -604,8 +604,8 @@ ahbl_splitter #(
 	.N_PORTS     (2),
 	.W_ADDR      (W_ADDR),
 	.W_DATA      (W_DATA),
-	.ADDR_MAP    (64'h08000000_08000000),
-	.ADDR_MASK   (64'h08000000_00000000)
+	.ADDR_MAP    (64'h08000000_00000000),
+	.ADDR_MASK   (64'h08000000_08000000)
 ) split_cpu0 (
 	.clk             (clk_sys       ),
 	.rst_n           (rst_n_sys     ),
@@ -641,8 +641,8 @@ ahbl_splitter #(
 	.N_PORTS     (2),
 	.W_ADDR      (W_ADDR),
 	.W_DATA      (W_DATA),
-	.ADDR_MAP    (64'h08000000_08000000),
-	.ADDR_MASK   (64'h08000000_00000000)
+	.ADDR_MAP    (64'h08000000_00000000),
+	.ADDR_MASK   (64'h08000000_08000000)
 ) split_cpu1 (
 	.clk             (clk_sys       ),
 	.rst_n           (rst_n_sys     ),
@@ -847,24 +847,24 @@ ahbl_splitter #(
 	.N_PORTS     (2),
 	.W_ADDR      (W_ADDR),
 	.W_DATA      (W_DATA),
-	.ADDR_MAP    (64'h0c000000_0c000000),
-	.ADDR_MASK   (64'h0c000000_08000000)
+	.ADDR_MAP    (64'h0c000000_08000000),
+	.ADDR_MASK   (64'h0c000000_0c000000)
 ) split_cache (
 	.clk             (clk_sys       ),
 	.rst_n           (rst_n_sys     ),
 
-	.src_hready      (cache_dst_hready   ),
-	.src_hready_resp (cache_dst_hready   ),
-	.src_hresp       (cache_dst_hresp    ),
-	.src_haddr       (cache_dst_haddr    ),
-	.src_hwrite      (cache_dst_hwrite   ),
-	.src_htrans      (cache_dst_htrans   ),
-	.src_hsize       (cache_dst_hsize    ),
-	.src_hburst      (cache_dst_hburst   ),
-	.src_hprot       (cache_dst_hprot    ),
-	.src_hmastlock   (cache_dst_hmastlock),
-	.src_hwdata      (cache_dst_hwdata   ),
-	.src_hrdata      (cache_dst_hrdata   ),
+	.src_hready      (cache_dst_hready     ),
+	.src_hready_resp (cache_dst_hready_resp),
+	.src_hresp       (cache_dst_hresp      ),
+	.src_haddr       (cache_dst_haddr      ),
+	.src_hwrite      (cache_dst_hwrite     ),
+	.src_htrans      (cache_dst_htrans     ),
+	.src_hsize       (cache_dst_hsize      ),
+	.src_hburst      (cache_dst_hburst     ),
+	.src_hprot       (cache_dst_hprot      ),
+	.src_hmastlock   (cache_dst_hmastlock  ),
+	.src_hwdata      (cache_dst_hwdata     ),
+	.src_hrdata      (cache_dst_hrdata     ),
 
 	.dst_hready      ({peri_hready      , sdram_hready     }),
 	.dst_hready_resp ({peri_hready_resp , sdram_hready_resp}),

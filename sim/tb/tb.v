@@ -24,7 +24,7 @@ module tb (
 chistmas_soc #(
 	.DTM_TYPE         ("JTAG"),
 	.TCM_DEPTH        (1024),
-	.TCM_PRELOAD_FILE (""),
+	.TCM_PRELOAD_FILE ("bootloader32.hex"),
 	.CACHE_SIZE_BYTES (4096)
 ) soc_u (
 	.clk_sys   (clk_sys),

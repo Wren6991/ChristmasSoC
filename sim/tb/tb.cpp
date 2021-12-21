@@ -89,8 +89,8 @@ int main(int argc, char **argv) {
 			exit_help("");
 		}
 	}
-	if (!(load_bin || port != 0))
-		exit_help("At least one of --bin or --port must be specified.\n");
+	// if (!(load_bin || port != 0))
+	// 	exit_help("At least one of --bin or --port must be specified.\n");
 
 	if (load_bin)
 		exit_help("--bin currently unsupported, SDRAM is a trip\n");

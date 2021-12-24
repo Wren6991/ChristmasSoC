@@ -24,7 +24,6 @@ module sdram_model #(
 	parameter BURST_LEN   = 8
 ) (
 	input  wire                 clk_sys, // Would use sdram_clk but CXXRTL is being weird
-	input  wire                 rst_n_por,
 
 	input  wire [W_BANKSEL-1:0] sdram_ba,
 	input  wire [W_ADDR-1:0]    sdram_a,

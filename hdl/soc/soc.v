@@ -1030,10 +1030,6 @@ assign spi_prdata    = 32'h00000000;
 assign spi_pready    = 1'b1;
 assign spi_pslverr   = 1'b1;
 
-assign timer_prdata  = 32'h00000000;
-assign timer_pready  = 1'b1;
-assign timer_pslverr = 1'b1;
-
 assign gpio_prdata   = 32'h00000000;
 assign gpio_pready   = 1'b1;
 assign gpio_pslverr  = 1'b1;
@@ -1112,9 +1108,26 @@ uart_mini uart_u (
 	.dreq         (/* unused */)
 );
 
+platform_timer timer_u (
+	.clk          (clk_sys),
+	.rst_n        (rst_n_sys),
+
+	.apbs_psel    (timer_psel),
+	.apbs_penable (timer_penable),
+	.apbs_pwrite  (timer_pwrite),
+	.apbs_paddr   (timer_paddr),
+	.apbs_pwdata  (timer_pwdata),
+	.apbs_prdata  (timer_prdata),
+	.apbs_pready  (timer_pready),
+	.apbs_pslverr (timer_pslverr),
+
+	.halt         (|hart_halted),
+
+	.timer_irq    (timer_irq),
+	.soft_irq     (soft_irq)
+);
+
 assign irq = {31'h0, uart_irq};
-
-
 
 endmodule
 

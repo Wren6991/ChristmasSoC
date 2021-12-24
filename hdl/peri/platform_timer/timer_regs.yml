@@ -1,0 +1,37 @@
+name: timer
+bus:  apb
+addr: 16
+data: 32
+regs:
+  - name: time
+    info: Read/write access to time counter, low half
+    bits:
+      - {b: [31, 0], access: rwf}
+  - name: timeh
+    info: Read/write access to time counter, high half
+    bits:
+      - {b: [31, 0], access: rwf}
+  - name: timecmp0
+    info: Counter compare value 0, low half
+    bits:
+      - {b: [31, 0], access: rw}
+  - name: timecmp0h
+    info: Counter compare value 0, high half
+    bits:
+      - {b: [31, 0], access: rw}
+  - name: timecmp1
+    info: Counter compare value 1, low half
+    bits:
+      - {b: [31, 0], access: rw}
+  - name: timecmp1h
+    info: Counter compare value 1, high half
+    bits:
+      - {b: [31, 0], access: rw}
+  - name: softirq_set
+    info: Set soft IRQs on write. Get soft IRQ status on read.
+    bits:
+      - {b: [1, 0], access: rwf}
+  - name: softirq_clr
+    info: Clear soft IRQs on write. Get soft IRQ status on read.
+    bits:
+      - {b: [1, 0], access: rwf}

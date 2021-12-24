@@ -166,7 +166,6 @@ sdram_model #(
 	.BURST_LEN   (8)
 ) sdram (
 	.clk_sys     (clk_sys),
-	.rst_n_port  (rst_n_por),
 	.sdram_ba    (sdram_ba),
 	.sdram_a     (sdram_a),
 	.sdram_dqm   (sdram_dqm),

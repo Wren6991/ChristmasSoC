@@ -18,7 +18,12 @@ module tb (
 	output wire                       tdo,
 
 	output wire                       uart_tx,
-	input  wire                       uart_rx
+	input  wire                       uart_rx,
+
+	output wire                       spi0_sclk,
+	output wire                       spi0_cs_n,
+	output wire                       spi0_sdo,
+	input  wire                       spi0_sdi
 );
 
 localparam W_SDRAM_BANKSEL = 2;
@@ -71,7 +76,12 @@ chistmas_soc #(
 	.sdram_phy_we_n_next  (sdram_phy_we_n_next),
 
 	.uart_tx              (uart_tx),
-	.uart_rx              (uart_rx)
+	.uart_rx              (uart_rx),
+
+	.spi0_sclk            (spi0_sclk),
+	.spi0_cs_n            (spi0_cs_n),
+	.spi0_sdo             (spi0_sdo),
+	.spi0_sdi             (spi0_sdi)
 );
 
 // ----------------------------------------------------------------------------

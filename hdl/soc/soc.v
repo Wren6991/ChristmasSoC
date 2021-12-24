@@ -66,7 +66,12 @@ module chistmas_soc #(
 
 	// IO
 	output wire                       uart_tx,
-	input  wire                       uart_rx
+	input  wire                       uart_rx,
+
+	output wire                       spi0_sclk,
+	output wire                       spi0_cs_n,
+	output wire                       spi0_sdo,
+	input  wire                       spi0_sdi
 );
 
 // ----------------------------------------------------------------------------
@@ -957,14 +962,14 @@ wire [31:0] uart_prdata;
 wire        uart_pready;
 wire        uart_pslverr;
 
-wire        spi_psel;
-wire        spi_penable;
-wire        spi_pwrite;
-wire [15:0] spi_paddr;
-wire [31:0] spi_pwdata;
-wire [31:0] spi_prdata;
-wire        spi_pready;
-wire        spi_pslverr;
+wire        spi0_psel;
+wire        spi0_penable;
+wire        spi0_pwrite;
+wire [15:0] spi0_paddr;
+wire [31:0] spi0_pwdata;
+wire [31:0] spi0_prdata;
+wire        spi0_pready;
+wire        spi0_pslverr;
 
 wire        sdram_psel;
 wire        sdram_penable;
@@ -1009,14 +1014,14 @@ apb_splitter #(
 	.apbs_prdata  (peri_prdata ),
 	.apbs_pslverr (peri_pslverr),
 
-	.apbm_paddr   ({gpio_paddr   , timer_paddr   , sdram_paddr   , spi_paddr   , uart_paddr  }),
-	.apbm_psel    ({gpio_psel    , timer_psel    , sdram_psel    , spi_psel    , uart_psel   }),
-	.apbm_penable ({gpio_penable , timer_penable , sdram_penable , spi_penable , uart_penable}),
-	.apbm_pwrite  ({gpio_pwrite  , timer_pwrite  , sdram_pwrite  , spi_pwrite  , uart_pwrite }),
-	.apbm_pwdata  ({gpio_pwdata  , timer_pwdata  , sdram_pwdata  , spi_pwdata  , uart_pwdata }),
-	.apbm_pready  ({gpio_pready  , timer_pready  , sdram_pready  , spi_pready  , uart_pready }),
-	.apbm_prdata  ({gpio_prdata  , timer_prdata  , sdram_prdata  , spi_prdata  , uart_prdata }),
-	.apbm_pslverr ({gpio_pslverr , timer_pslverr , sdram_pslverr , spi_pslverr , uart_pslverr})
+	.apbm_paddr   ({gpio_paddr   , timer_paddr   , sdram_paddr   , spi0_paddr   , uart_paddr  }),
+	.apbm_psel    ({gpio_psel    , timer_psel    , sdram_psel    , spi0_psel    , uart_psel   }),
+	.apbm_penable ({gpio_penable , timer_penable , sdram_penable , spi0_penable , uart_penable}),
+	.apbm_pwrite  ({gpio_pwrite  , timer_pwrite  , sdram_pwrite  , spi0_pwrite  , uart_pwrite }),
+	.apbm_pwdata  ({gpio_pwdata  , timer_pwdata  , sdram_pwdata  , spi0_pwdata  , uart_pwdata }),
+	.apbm_pready  ({gpio_pready  , timer_pready  , sdram_pready  , spi0_pready  , uart_pready }),
+	.apbm_prdata  ({gpio_prdata  , timer_prdata  , sdram_prdata  , spi0_prdata  , uart_prdata }),
+	.apbm_pslverr ({gpio_pslverr , timer_pslverr , sdram_pslverr , spi0_pslverr , uart_pslverr})
 );
 
 // ----------------------------------------------------------------------------
@@ -1025,10 +1030,6 @@ apb_splitter #(
 wire uart_irq;
 
 // Error response on currently-empty ports
-
-assign spi_prdata    = 32'h00000000;
-assign spi_pready    = 1'b1;
-assign spi_pslverr   = 1'b1;
 
 assign gpio_prdata   = 32'h00000000;
 assign gpio_pready   = 1'b1;
@@ -1126,6 +1127,28 @@ platform_timer timer_u (
 	.timer_irq    (timer_irq),
 	.soft_irq     (soft_irq)
 );
+
+spi_mini #(
+	.FIFO_DEPTH (2)
+) spi0_u (
+	.clk          (clk_sys),
+	.rst_n        (rst_n_sys),
+
+	.apbs_psel    (spi0_psel),
+	.apbs_penable (spi0_penable),
+	.apbs_pwrite  (spi0_pwrite),
+	.apbs_paddr   (spi0_paddr),
+	.apbs_pwdata  (spi0_pwdata),
+	.apbs_prdata  (spi0_prdata),
+	.apbs_pready  (spi0_pready),
+	.apbs_pslverr (spi0_pslverr),
+
+	.sclk         (spi0_sclk),
+	.sdo          (spi0_sdo),
+	.sdi          (spi0_sdi),
+	.cs_n         (spi0_cs_n)
+);
+
 
 assign irq = {31'h0, uart_irq};
 

@@ -13,8 +13,10 @@
 //
 // - Standard RISC-V debug (0.13.2) with multicore support
 // - Per-core local RAM (TCM) and shared system cache
-// - A UART
-// - Some more SRAM
+// - SDRAM controller
+// - UART x1
+// - SPI x1
+// - Platform timer with two comparators, + soft IRQ regs
 //
 // This will be expanded!
 

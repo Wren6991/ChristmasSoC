@@ -89,11 +89,111 @@ public:
 	}
 };
 
+class SPIMem {
+
+	enum phase_t {
+		CMD,
+		ADDR,
+		DATA,
+		ERR
+	};
+	phase_t phase;
+
+	uint8_t cmd;
+	uint32_t addr;
+	int shift_ctr;
+	bool sck_prev;
+	bool miso;
+
+	uint32_t base_addr;
+	const uint8_t *img;
+	size_t img_size;
+
+	uint8_t get(uint32_t addr) const {
+		addr -= base_addr;
+		if (addr >= img_size)
+			return 0xffu;
+		else
+			return img[addr];
+	}
+
+public:
+
+	SPIMem(const uint8_t *img_, size_t img_size_, uint32_t base_addr_) {
+		phase = CMD;
+		cmd = 0;
+		addr = 0;
+		shift_ctr = 0;
+		sck_prev = false;
+		miso = false;
+		base_addr = base_addr_;
+		img = img_;
+		img_size = img_size_;
+	}
+
+	bool step(bool cs_n, bool sck, bool mosi) {
+		// Soft-reset of interface on deselect
+		if (cs_n) {
+			phase = CMD;
+			cmd = 0;
+			addr = 0;
+			shift_ctr = 0;
+			sck_prev = sck;
+			miso = false;
+			return miso;
+		}
+
+		switch (phase) {
+		case CMD:
+			miso = false;
+			if (!(sck && !sck_prev))
+				break;
+
+			cmd = (cmd << 1) | mosi;
+			if (++shift_ctr >= 8) {
+				phase = ADDR;
+				shift_ctr = 0;
+				if (cmd != 0x03u)
+					phase = ERR;
+			}
+			break;
+
+		case ADDR:
+			if (!(sck && !sck_prev))
+				break;
+
+			addr = (addr << 1) | mosi;
+			if (++shift_ctr >= 24) {
+				phase = DATA;
+				shift_ctr = 0;
+			}
+
+		case DATA:
+			if (!(!sck && sck_prev))
+				break;
+
+			miso = (get(addr) >> (7 - shift_ctr)) & 0x1u;
+			if (++shift_ctr >= 8) {
+				++addr;
+				shift_ctr = 0;
+			}
+			break;
+				
+		case ERR:
+			miso = false;
+			break;
+
+		}
+		sck_prev = sck;
+		return miso;
+	}
+};
+
 // -----------------------------------------------------------------------------
 
 const char *help_str =
 "Usage: tb [--bin x.bin] [--vcd x.vcd] [--dump start end] [--cycles n] [--port n]\n"
-"    --bin x.bin      : Flat binary file loaded to address 0x0 in RAM\n"
+"    --bin x.bin      : Flat binary file loaded to address 0x100000 in flash\n"
 "    --vcd x.vcd      : Path to dump waveforms to\n"
 "    --dump start end : Print out memory contents from start to end (exclusive)\n"
 "                       after execution finishes. Can be passed multiple times.\n"
@@ -166,11 +266,8 @@ int main(int argc, char **argv) {
 			exit_help("");
 		}
 	}
-	// if (!(load_bin || port != 0))
-	// 	exit_help("At least one of --bin or --port must be specified.\n");
-
-	if (load_bin)
-		exit_help("--bin currently unsupported, SDRAM is a trip\n");
+	if (!(load_bin || port != 0))
+		exit_help("At least one of --bin or --port must be specified.\n");
 
 	int server_fd, sock_fd;
 	struct sockaddr_in sock_addr;
@@ -216,6 +313,23 @@ int main(int argc, char **argv) {
 		}
 		printf("Connected\n");
 	}
+
+	size_t binsize = 0;
+	uint8_t *binimg = NULL;
+
+	if (load_bin) {
+		std::ifstream fd(bin_path, std::ios::binary | std::ios::ate);
+		if (!fd){
+			std::cerr << "Failed to open \"" << bin_path << "\"\n";
+			return -1;
+		}
+		binsize = fd.tellg();
+		fd.seekg(0, std::ios::beg);
+		binimg = new uint8_t[binsize];
+		fd.read((char*)binimg, binsize);
+	}
+
+	SPIMem spi0(binimg, binsize, 0x100000u);
 
 	UARTRX uart0(BAUD_PERIOD);
 
@@ -324,6 +438,12 @@ int main(int argc, char **argv) {
 		if (uart0.rx_valid()) {
 			putchar(uart0.get_rx());
 		}
+
+		top.p_spi0__sdi.set<bool>(spi0.step(
+			top.p_spi0__cs__n.get<bool>(),
+			top.p_spi0__sclk.get<bool>(),
+			top.p_spi0__sdo.get<bool>()
+		));
 
 		// if (memio.exit_req) {
 		// 	printf("CPU requested halt. Exit code %d\n", memio.exit_code);

@@ -701,9 +701,10 @@ ahbl_splitter #(
 );
 
 ahbl_arbiter #(
-	.N_PORTS (2),
-	.W_ADDR  (W_ADDR),
-	.W_DATA  (W_DATA)
+	.N_PORTS          (2),
+	.W_ADDR           (W_ADDR),
+	.W_DATA           (W_DATA),
+	.FAIR_ARBITRATION (1)
 ) arbiter_cache (
 	.clk             (clk_sys),
 	.rst_n           (rst_n_sys),

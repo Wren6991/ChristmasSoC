@@ -34,8 +34,8 @@ _core1_wait:
 	csrci mstatus, 0x8
 	csrw mie, 0x8
 	wfi
-	// For now, assume entry point immediately follows a vector table at the
-	// start of SDRAM.
+	// Don't clear the soft-IRQ. Most likely we received the soft IRQ
+	// Assume entry point immediately follows a vector table at SDRAM base.
 	li a0, SDRAM_BASE + 0x40
 	jalr a0
 	j _dead

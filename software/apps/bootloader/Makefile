@@ -1,7 +1,7 @@
 APPNAME  := bootloader
 SRCS     := ../../src/boot_init.S ../../src/boot_main.c
 INCDIRS  := ../../include
-LDSCRIPT := ../../ldscript/memmap_boot.ld
+LDSCRIPT := ../../scripts/memmap_boot.ld
 MARCH    := rv32ima
 
 CROSS_PREFIX=riscv32-unknown-elf-

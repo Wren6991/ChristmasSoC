@@ -18,15 +18,21 @@ typedef struct spi_hw {
 
 #define mm_spi ((spi_hw_t *)SPI_BASE)
 
+static inline void spi_flush() {
+	while (mm_spi->csr & SPI_CSR_BUSY_MASK)
+		;
+	while (!(mm_spi->fstat & SPI_FSTAT_RXEMPTY_MASK))
+		(void)mm_spi->rx;
+}
+
 static inline void spi_init(bool cpol, bool cpha)
 {
-	// TODO: need to drain TX FIFO etc
+	spi_flush();
+
 	mm_spi->csr = (SPI_CSR_CSAUTO_MASK | SPI_CSR_READ_EN_MASK) |
 		(!!cpol << SPI_CSR_CPOL_LSB) |
 		(!!cpha << SPI_CSR_CPHA_LSB);
 
-	while (!(mm_spi->fstat & SPI_FSTAT_RXEMPTY_MASK))
-		(void)mm_spi->rx;
 
 	mm_spi->fstat = SPI_FSTAT_TXOVER_MASK | SPI_FSTAT_RXOVER_MASK | SPI_FSTAT_RXUNDER_MASK;
 }
@@ -43,8 +49,7 @@ static inline void spi_write(const uint8_t *data, size_t len)
 
 static inline void spi_write_read(const uint8_t *tx, uint8_t *rx, size_t len)
 {
-	while (!(mm_spi->fstat & SPI_FSTAT_RXEMPTY_MASK))
-		(void)mm_spi->rx;
+	spi_flush();
 
 	size_t tx_remaining = len;
 	size_t rx_remaining = len;

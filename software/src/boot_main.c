@@ -35,6 +35,9 @@ void main() {
 	spi_write(buf, 4);
 
 	spi_write_read(buf, buf, 4);
+	uart_puts("Magic: ");
+	uart_putint(*(uint32_t*)buf);
+	uart_puts("\n");
 	if (buf[0] != 'C' || buf[1] != 'S' || buf[2] != 'o' || buf[3] != 'C') {
 		uart_puts("Bad magic\n");
 		return;
@@ -42,6 +45,9 @@ void main() {
 
 	spi_write_read(buf, buf, 4);
 	uint32_t len = (uint32_t)buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
+	uart_puts("Size:  ");
+	uart_putint(len);
+	uart_puts("\n");
 	if (len > SDRAM_SIZE) {
 		uart_puts("Bad size\n");
 		return;

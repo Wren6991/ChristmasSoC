@@ -18,4 +18,6 @@
 #define CACHE_SIZE_WORDS 1024
 #define CACHE_LINE_SIZE_WORDS 4
 
+#define __tcm(obj) __attribute__((section(".tcm." #obj) obj
+
 #endif

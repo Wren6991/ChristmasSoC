@@ -90,17 +90,32 @@ _reset_handler:
 	j _halt
 
 _core1_wait:
-	// Assume CSRs are already configured for a wait-for-soft-IRQ. Clear the
-	// IRQ that got us here, and wait for another one.
+	// IRQs disabled, but soft IRQ unmasked -> soft IRQ will exit WFI.
+	csrci mstatus, 0x8
+	csrw mie, 0x8
+_core1_wait_loop:
+	// This WFI will probably fall straight through:
+	//
+	// - Core 1 was spinning in its TCM bootcode when core 0, having booted,
+	//   set the entry point and posted an IRQ to kick it into this routine
+	//
+	// Less likely:
+	//
+	// - Debugger has done a warm boot, and there is a stale IRQ left behind,
+	//   in which case we see the zero entry point and wait for another IRQ.
+	//   (this is why it's critical to clear the IRQ *before* checking the
+	//   entry point, to avoid permasleep!)
+	wfi
+	// Clear the IRQ first, *then* check the entry point
 	li a0, TIMER_BASE
 	li a1, 1 << 1
 	sw a1, TIMER_SOFTIRQ_CLR_OFFS(a0)
-_core1_wait_loop:
-	wfi
 	la a0, core1_entry_vector
 	lw a0, (a0)
 	beqz a0, _core1_wait_loop
-	la sp, __stack_top - 0x10000
+_core1_go:
+	// Stack was already initialised in reset handler. Static data sections
+	// were initialised by core 0.
 	jalr a0
 _core1_finish:
 	wfi

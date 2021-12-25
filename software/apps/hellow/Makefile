@@ -1,8 +1,8 @@
 APPNAME  := hellow
 SRCS     := ../../src/init.S ../../src/$(APPNAME).c
 INCDIRS  := ../../include
-LDSCRIPT := ../../ldscript/memmap_sdram.ld
-MARCH    := rv32im
+LDSCRIPT := ../../scripts/memmap_sdram.ld
+MARCH    := rv32ima
 
 CROSS_PREFIX=riscv32-unknown-elf-
 CC=$(CROSS_PREFIX)gcc
@@ -24,13 +24,10 @@ $(APPNAME).elf: $(SRCS)
 	$(CC) $(CCFLAGS) $(SRCS) -o $(APPNAME).elf
 
 %.bin: %.elf
-	$(OBJCOPY) -O binary	 $< $@
+	$(OBJCOPY) -O binary $< $@
 
-%8.hex: %.elf
-	$(OBJCOPY) -O verilog $< $@
-
-%32.hex: %8.hex
-	$(SCRIPTS)/vhexwidth -w 32 $< -o $@
+%_flash.bin: %.bin
+	../../scripts/mkflashbin $< $@
 
 $(APPNAME).dis: $(APPNAME).elf
 	@echo ">>>>>>>>> Memory map:" > $(APPNAME).dis
@@ -40,7 +37,7 @@ $(APPNAME).dis: $(APPNAME).elf
 	$(OBJDUMP) -D $(APPNAME).elf >> $(APPNAME).dis
 
 
-compile:: $(APPNAME)32.hex $(APPNAME).dis
+compile:: $(APPNAME).bin $(APPNAME)_flash.bin $(APPNAME).dis
 
 clean::
 	rm -f $(APPNAME).elf $(APPNAME)32.hex $(APPNAME)8.hex $(APPNAME).dis $(APPNAME).bin $(OBJS)

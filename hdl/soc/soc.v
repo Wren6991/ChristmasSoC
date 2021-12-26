@@ -398,7 +398,7 @@ wire              cpu0_hmastlock;
 wire              cpu0_hexcl;
 wire              cpu0_hready;
 wire              cpu0_hresp;
-wire              cpu0_hexokay = 1'b1; // TODO global exclusives
+wire              cpu0_hexokay;
 wire [W_DATA-1:0] cpu0_hwdata;
 wire [W_DATA-1:0] cpu0_hrdata;
 
@@ -476,7 +476,7 @@ wire              cpu1_hmastlock;
 wire              cpu1_hexcl;
 wire              cpu1_hready;
 wire              cpu1_hresp;
-wire              cpu1_hexokay = 1'b1; // TODO global exclusives
+wire              cpu1_hexokay;
 wire [W_DATA-1:0] cpu1_hwdata;
 wire [W_DATA-1:0] cpu1_hrdata;
 
@@ -639,6 +639,7 @@ ahbl_splitter #(
 	.src_hready      (cpu0_hready   ), // TODO exclusives!
 	.src_hready_resp (cpu0_hready   ),
 	.src_hresp       (cpu0_hresp    ),
+	.src_hexokay     (cpu0_hexokay  ),
 	.src_haddr       (cpu0_haddr    ),
 	.src_hwrite      (cpu0_hwrite   ),
 	.src_htrans      (cpu0_htrans   ),
@@ -646,12 +647,14 @@ ahbl_splitter #(
 	.src_hburst      (cpu0_hburst   ),
 	.src_hprot       (cpu0_hprot    ),
 	.src_hmastlock   (cpu0_hmastlock),
+	.src_hexcl       (cpu0_hexcl),
 	.src_hwdata      (cpu0_hwdata   ),
 	.src_hrdata      (cpu0_hrdata   ),
 
 	.dst_hready      ({cpu0_to_cache_hready      , cpu0_to_tcm_hready     }),
 	.dst_hready_resp ({cpu0_to_cache_hready_resp , cpu0_to_tcm_hready_resp}),
 	.dst_hresp       ({cpu0_to_cache_hresp       , cpu0_to_tcm_hresp      }),
+	.dst_hexokay     ({cpu0_to_cache_hexokay     , cpu0_to_tcm_hexokay    }),
 	.dst_haddr       ({cpu0_to_cache_haddr       , cpu0_to_tcm_haddr      }),
 	.dst_hwrite      ({cpu0_to_cache_hwrite      , cpu0_to_tcm_hwrite     }),
 	.dst_htrans      ({cpu0_to_cache_htrans      , cpu0_to_tcm_htrans     }),
@@ -659,6 +662,7 @@ ahbl_splitter #(
 	.dst_hburst      ({cpu0_to_cache_hburst      , cpu0_to_tcm_hburst     }),
 	.dst_hprot       ({cpu0_to_cache_hprot       , cpu0_to_tcm_hprot      }),
 	.dst_hmastlock   ({cpu0_to_cache_hmastlock   , cpu0_to_tcm_hmastlock  }),
+	.dst_hexcl       ({cpu0_to_cache_hexcl       , cpu0_to_tcm_hexcl      }),
 	.dst_hwdata      ({cpu0_to_cache_hwdata      , cpu0_to_tcm_hwdata     }),
 	.dst_hrdata      ({cpu0_to_cache_hrdata      , cpu0_to_tcm_hrdata     })
 );
@@ -676,6 +680,7 @@ ahbl_splitter #(
 	.src_hready      (cpu1_hready   ), // TODO exclusives!
 	.src_hready_resp (cpu1_hready   ),
 	.src_hresp       (cpu1_hresp    ),
+	.src_hexokay     (cpu1_hexokay  ),
 	.src_haddr       (cpu1_haddr    ),
 	.src_hwrite      (cpu1_hwrite   ),
 	.src_htrans      (cpu1_htrans   ),
@@ -683,12 +688,14 @@ ahbl_splitter #(
 	.src_hburst      (cpu1_hburst   ),
 	.src_hprot       (cpu1_hprot    ),
 	.src_hmastlock   (cpu1_hmastlock),
+	.src_hexcl       (cpu1_hexcl),
 	.src_hwdata      (cpu1_hwdata   ),
 	.src_hrdata      (cpu1_hrdata   ),
 
 	.dst_hready      ({cpu1_to_cache_hready      , cpu1_to_tcm_hready     }),
 	.dst_hready_resp ({cpu1_to_cache_hready_resp , cpu1_to_tcm_hready_resp}),
 	.dst_hresp       ({cpu1_to_cache_hresp       , cpu1_to_tcm_hresp      }),
+	.dst_hexokay     ({cpu1_to_cache_hexokay     , cpu1_to_tcm_hexokay    }),
 	.dst_haddr       ({cpu1_to_cache_haddr       , cpu1_to_tcm_haddr      }),
 	.dst_hwrite      ({cpu1_to_cache_hwrite      , cpu1_to_tcm_hwrite     }),
 	.dst_htrans      ({cpu1_to_cache_htrans      , cpu1_to_tcm_htrans     }),
@@ -696,9 +703,11 @@ ahbl_splitter #(
 	.dst_hburst      ({cpu1_to_cache_hburst      , cpu1_to_tcm_hburst     }),
 	.dst_hprot       ({cpu1_to_cache_hprot       , cpu1_to_tcm_hprot      }),
 	.dst_hmastlock   ({cpu1_to_cache_hmastlock   , cpu1_to_tcm_hmastlock  }),
+	.dst_hexcl       ({cpu1_to_cache_hexcl       , cpu1_to_tcm_hexcl      }),
 	.dst_hwdata      ({cpu1_to_cache_hwdata      , cpu1_to_tcm_hwdata     }),
 	.dst_hrdata      ({cpu1_to_cache_hrdata      , cpu1_to_tcm_hrdata     })
 );
+
 
 ahbl_arbiter #(
 	.N_PORTS          (2),
@@ -712,6 +721,7 @@ ahbl_arbiter #(
 	.src_hready      ({cpu1_to_cache_hready      , cpu0_to_cache_hready     }),
 	.src_hready_resp ({cpu1_to_cache_hready_resp , cpu0_to_cache_hready_resp}),
 	.src_hresp       ({cpu1_to_cache_hresp       , cpu0_to_cache_hresp      }),
+	.src_hexokay     ({cpu1_to_cache_hexokay     , cpu0_to_cache_hexokay    }),
 	.src_haddr       ({cpu1_to_cache_haddr       , cpu0_to_cache_haddr      }),
 	.src_hwrite      ({cpu1_to_cache_hwrite      , cpu0_to_cache_hwrite     }),
 	.src_htrans      ({cpu1_to_cache_htrans      , cpu0_to_cache_htrans     }),
@@ -719,12 +729,14 @@ ahbl_arbiter #(
 	.src_hburst      ({cpu1_to_cache_hburst      , cpu0_to_cache_hburst     }),
 	.src_hprot       ({cpu1_to_cache_hprot       , cpu0_to_cache_hprot      }),
 	.src_hmastlock   ({cpu1_to_cache_hmastlock   , cpu0_to_cache_hmastlock  }),
+	.src_hexcl       ({cpu1_to_cache_hexcl       , cpu0_to_cache_hexcl      }),
 	.src_hwdata      ({cpu1_to_cache_hwdata      , cpu0_to_cache_hwdata     }),
 	.src_hrdata      ({cpu1_to_cache_hrdata      , cpu0_to_cache_hrdata     }),
 
 	.dst_hready      (cache_src_hready     ),
 	.dst_hready_resp (cache_src_hready_resp),
 	.dst_hresp       (cache_src_hresp      ),
+	.dst_hexokay     (cache_src_hexokay    ),
 	.dst_haddr       (cache_src_haddr      ),
 	.dst_hwrite      (cache_src_hwrite     ),
 	.dst_htrans      (cache_src_htrans     ),
@@ -732,6 +744,7 @@ ahbl_arbiter #(
 	.dst_hburst      (cache_src_hburst     ),
 	.dst_hprot       (cache_src_hprot      ),
 	.dst_hmastlock   (cache_src_hmastlock  ),
+	.dst_hexcl       (cache_src_hexcl      ),
 	.dst_hwdata      (cache_src_hwdata     ),
 	.dst_hrdata      (cache_src_hrdata     )
 );
@@ -742,6 +755,7 @@ ahbl_arbiter #(
 // Note both TCMs get the same preload contents. Software needs to check which
 // core it is running on (via `mhartid`), and presumably put core 1 to sleep
 // until core 0 loads a suitable program binary into main memory.
+
 
 ahb_sync_sram #(
 	.W_DATA       (W_DATA),
@@ -786,6 +800,32 @@ ahb_sync_sram #(
 	.ahbls_hwdata      (cpu1_to_tcm_hwdata),
 	.ahbls_hrdata      (cpu1_to_tcm_hrdata)
 );
+
+// Dummy hexokay responses for TCMs. Always OK since they're core-private.
+
+reg tcm0_hexokay_reg;
+reg tcm1_hexokay_reg;
+
+always @ (posedge clk_sys or negedge rst_n_sys) begin
+	if (!rst_n_sys) begin
+		tcm0_hexokay_reg <= 1'b0;
+		tcm1_hexokay_reg <= 1'b0;
+	end else begin
+		if (cpu0_to_tcm_hready) begin
+			tcm0_hexokay_reg <= cpu0_to_tcm_htrans[1] && cpu0_to_tcm_hexcl;
+		end
+		if (cpu1_to_tcm_hready) begin
+			tcm1_hexokay_reg <= cpu1_to_tcm_htrans[1] && cpu1_to_tcm_hexcl;
+		end
+	end
+end
+
+// No need to mask since hready_resp always high on SRAM.
+assign cpu0_to_tcm_hexokay = tcm0_hexokay_reg;
+assign cpu1_to_tcm_hexokay = tcm1_hexokay_reg;
+
+// Cache doesn't support exclusives right now. Fail the reservation.
+assign cache_src_hexokay = 1'b0;
 
 wire [W_ADDR-1:0] cache_dst_haddr;
 wire              cache_dst_hwrite;

@@ -837,9 +837,6 @@ end
 assign cpu0_to_tcm_hexokay = tcm0_hexokay_reg;
 assign cpu1_to_tcm_hexokay = tcm1_hexokay_reg;
 
-// Cache doesn't support exclusives right now. Fail the reservation.
-assign cache_src_hexokay = 1'b0;
-
 wire [W_ADDR-1:0] cache_dst_haddr;
 wire              cache_dst_hwrite;
 wire [1:0]        cache_dst_htrans;
@@ -854,11 +851,13 @@ wire [W_DATA-1:0] cache_dst_hwdata;
 wire [W_DATA-1:0] cache_dst_hrdata;
 
 ahb_cache_writeback #(
-	.N_WAYS         (1                    ),
-	.W_ADDR         (W_ADDR               ),
-	.W_DATA         (W_DATA               ),
-	.W_LINE         (128                  ), // 8-beat bursts on 16b SDRAM bus. Minimum efficient burst.
-	.DEPTH          (CACHE_SIZE_BYTES / 16)
+	.N_WAYS           (1                    ),
+	.W_ADDR           (W_ADDR               ),
+	.W_DATA           (W_DATA               ),
+	.W_LINE           (128                  ), // 8-beat bursts on 16b SDRAM bus. Minimum efficient burst.
+	.DEPTH            (CACHE_SIZE_BYTES / 16),
+	.EXCL_N_MASTERS   (2                    ),
+	.EXCL_GRANULE_LSB (3                    )  // 8-byte reservation granule
 ) cache_u (
 	.clk             (clk_sys),
 	.rst_n           (rst_n_sys),
@@ -866,6 +865,7 @@ ahb_cache_writeback #(
 	.src_hready_resp (cache_src_hready_resp),
 	.src_hready      (cache_src_hready),
 	.src_hresp       (cache_src_hresp),
+	.src_hexokay     (cache_src_hexokay),
 	.src_haddr       (cache_src_haddr),
 	.src_hwrite      (cache_src_hwrite),
 	.src_htrans      (cache_src_htrans),
@@ -873,7 +873,9 @@ ahb_cache_writeback #(
 	.src_hburst      (cache_src_hburst),
 	// Map IO as noncacheable and SDRAM as cacheable:
 	.src_hprot       ({{2{!cache_src_haddr[26]}}, cache_src_hprot[1:0]}),
+	.src_hmaster     (cache_src_hmaster),
 	.src_hmastlock   (cache_src_hmastlock),
+	.src_hexcl       (cache_src_hexcl),
 	.src_hwdata      (cache_src_hwdata),
 	.src_hrdata      (cache_src_hrdata),
 

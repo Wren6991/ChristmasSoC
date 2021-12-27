@@ -394,6 +394,7 @@ wire [1:0]        cpu0_htrans;
 wire [2:0]        cpu0_hsize;
 wire [2:0]        cpu0_hburst;
 wire [3:0]        cpu0_hprot;
+wire [7:0]        cpu0_hmaster = 8'h00;
 wire              cpu0_hmastlock;
 wire              cpu0_hexcl;
 wire              cpu0_hready;
@@ -472,6 +473,7 @@ wire [1:0]        cpu1_htrans;
 wire [2:0]        cpu1_hsize;
 wire [2:0]        cpu1_hburst;
 wire [3:0]        cpu1_hprot;
+wire [7:0]        cpu1_hmaster = 8'h01;
 wire              cpu1_hmastlock;
 wire              cpu1_hexcl;
 wire              cpu1_hready;
@@ -557,6 +559,7 @@ wire [1:0]        cpu0_to_tcm_htrans;
 wire [2:0]        cpu0_to_tcm_hsize;
 wire [2:0]        cpu0_to_tcm_hburst;
 wire [3:0]        cpu0_to_tcm_hprot;
+wire [7:0]        cpu0_to_tcm_hmaster;
 wire              cpu0_to_tcm_hmastlock;
 wire              cpu0_to_tcm_hexcl;
 wire              cpu0_to_tcm_hready;
@@ -572,6 +575,7 @@ wire [1:0]        cpu1_to_tcm_htrans;
 wire [2:0]        cpu1_to_tcm_hsize;
 wire [2:0]        cpu1_to_tcm_hburst;
 wire [3:0]        cpu1_to_tcm_hprot;
+wire [7:0]        cpu1_to_tcm_hmaster;
 wire              cpu1_to_tcm_hmastlock;
 wire              cpu1_to_tcm_hexcl;
 wire              cpu1_to_tcm_hready;
@@ -587,6 +591,7 @@ wire [1:0]        cpu0_to_cache_htrans;
 wire [2:0]        cpu0_to_cache_hsize;
 wire [2:0]        cpu0_to_cache_hburst;
 wire [3:0]        cpu0_to_cache_hprot;
+wire [7:0]        cpu0_to_cache_hmaster;
 wire              cpu0_to_cache_hmastlock;
 wire              cpu0_to_cache_hexcl;
 wire              cpu0_to_cache_hready;
@@ -602,6 +607,7 @@ wire [1:0]        cpu1_to_cache_htrans;
 wire [2:0]        cpu1_to_cache_hsize;
 wire [2:0]        cpu1_to_cache_hburst;
 wire [3:0]        cpu1_to_cache_hprot;
+wire [7:0]        cpu1_to_cache_hmaster;
 wire              cpu1_to_cache_hmastlock;
 wire              cpu1_to_cache_hexcl;
 wire              cpu1_to_cache_hready;
@@ -617,6 +623,7 @@ wire [1:0]        cache_src_htrans;
 wire [2:0]        cache_src_hsize;
 wire [2:0]        cache_src_hburst;
 wire [3:0]        cache_src_hprot;
+wire [7:0]        cache_src_hmaster;
 wire              cache_src_hmastlock;
 wire              cache_src_hexcl;
 wire              cache_src_hready;
@@ -646,6 +653,7 @@ ahbl_splitter #(
 	.src_hsize       (cpu0_hsize    ),
 	.src_hburst      (cpu0_hburst   ),
 	.src_hprot       (cpu0_hprot    ),
+	.src_hmaster     (cpu0_hmaster  ),
 	.src_hmastlock   (cpu0_hmastlock),
 	.src_hexcl       (cpu0_hexcl),
 	.src_hwdata      (cpu0_hwdata   ),
@@ -661,6 +669,7 @@ ahbl_splitter #(
 	.dst_hsize       ({cpu0_to_cache_hsize       , cpu0_to_tcm_hsize      }),
 	.dst_hburst      ({cpu0_to_cache_hburst      , cpu0_to_tcm_hburst     }),
 	.dst_hprot       ({cpu0_to_cache_hprot       , cpu0_to_tcm_hprot      }),
+	.dst_hmaster     ({cpu0_to_cache_hmaster     , cpu0_to_tcm_hmaster    }),
 	.dst_hmastlock   ({cpu0_to_cache_hmastlock   , cpu0_to_tcm_hmastlock  }),
 	.dst_hexcl       ({cpu0_to_cache_hexcl       , cpu0_to_tcm_hexcl      }),
 	.dst_hwdata      ({cpu0_to_cache_hwdata      , cpu0_to_tcm_hwdata     }),
@@ -687,6 +696,7 @@ ahbl_splitter #(
 	.src_hsize       (cpu1_hsize    ),
 	.src_hburst      (cpu1_hburst   ),
 	.src_hprot       (cpu1_hprot    ),
+	.src_hmaster     (cpu1_hmaster  ),
 	.src_hmastlock   (cpu1_hmastlock),
 	.src_hexcl       (cpu1_hexcl),
 	.src_hwdata      (cpu1_hwdata   ),
@@ -702,6 +712,7 @@ ahbl_splitter #(
 	.dst_hsize       ({cpu1_to_cache_hsize       , cpu1_to_tcm_hsize      }),
 	.dst_hburst      ({cpu1_to_cache_hburst      , cpu1_to_tcm_hburst     }),
 	.dst_hprot       ({cpu1_to_cache_hprot       , cpu1_to_tcm_hprot      }),
+	.dst_hmaster     ({cpu1_to_cache_hmaster     , cpu1_to_tcm_hmaster    }),
 	.dst_hmastlock   ({cpu1_to_cache_hmastlock   , cpu1_to_tcm_hmastlock  }),
 	.dst_hexcl       ({cpu1_to_cache_hexcl       , cpu1_to_tcm_hexcl      }),
 	.dst_hwdata      ({cpu1_to_cache_hwdata      , cpu1_to_tcm_hwdata     }),
@@ -728,6 +739,7 @@ ahbl_arbiter #(
 	.src_hsize       ({cpu1_to_cache_hsize       , cpu0_to_cache_hsize      }),
 	.src_hburst      ({cpu1_to_cache_hburst      , cpu0_to_cache_hburst     }),
 	.src_hprot       ({cpu1_to_cache_hprot       , cpu0_to_cache_hprot      }),
+	.src_hmaster     ({cpu1_to_cache_hmaster     , cpu0_to_cache_hmaster    }),
 	.src_hmastlock   ({cpu1_to_cache_hmastlock   , cpu0_to_cache_hmastlock  }),
 	.src_hexcl       ({cpu1_to_cache_hexcl       , cpu0_to_cache_hexcl      }),
 	.src_hwdata      ({cpu1_to_cache_hwdata      , cpu0_to_cache_hwdata     }),
@@ -743,6 +755,7 @@ ahbl_arbiter #(
 	.dst_hsize       (cache_src_hsize      ),
 	.dst_hburst      (cache_src_hburst     ),
 	.dst_hprot       (cache_src_hprot      ),
+	.dst_hmaster     (cache_src_hmaster    ),
 	.dst_hmastlock   (cache_src_hmastlock  ),
 	.dst_hexcl       (cache_src_hexcl      ),
 	.dst_hwdata      (cache_src_hwdata     ),

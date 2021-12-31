@@ -12,6 +12,7 @@ SECTIONS {
         KEEP(*(.vectors*))
         *(.text*)
     } > SDRAM
+    _etext = .;
 
     .rodata : {
         *(.rodata .rodata.*)

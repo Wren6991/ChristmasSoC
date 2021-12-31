@@ -2,6 +2,7 @@ export PROJ_ROOT=$PWD
 export HDL=$PROJ_ROOT/hdl
 export LIBFPGA=$HDL/libfpga
 export SCRIPTS=$PROJ_ROOT/scripts
+export SOFTWARE=$PROJ_ROOT/software
 
 export PATH="$PATH:$PWD/scripts"
 export PATH="$PATH:/opt/riscv/bin"

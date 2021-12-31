@@ -1,9 +1,11 @@
 file soc.v
 list $HDL/hazard3/hdl/hazard3.f
 list $HDL/hazard3/hdl/debug/dtm/hazard3_jtag_dtm.f
+list $HDL/hazard3/hdl/debug/dtm/hazard3_ecp5_jtag_dtm.f
 list $HDL/hazard3/hdl/debug/dm/hazard3_dm.f
 
 list $HDL/peri/platform_timer/platform_timer.f
+list $HDL/peri/gpio/gpio.f
 
 list $HDL/libfpga/busfabric/busfabric.f
 list $HDL/libfpga/mem/ahb_cache.f

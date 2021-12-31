@@ -17,12 +17,11 @@
 // - UART x1
 // - SPI x1
 // - Platform timer with two comparators, + soft IRQ regs
-//
-// This will be expanded!
+// - GPIO registers
 
 `default_nettype none
 
-module chistmas_soc #(
+module christmas_soc #(
 	// can be "JTAG" or "ECP5". "JTAG" means the DTM connects to the
 	// tck/tms/tdi/tdo pins on this module. "ECP5" means the DTM is attached to
 	// the custom DR hooks on the ECP5 chip TAP, so the cores can be debugged
@@ -33,6 +32,8 @@ module chistmas_soc #(
 	parameter TCM_PRELOAD_FILE = "",
 
 	parameter CACHE_SIZE_BYTES = 1 << 12,
+
+	parameter N_GPIOS          = 8,
 
 	parameter W_SDRAM_DATA     = 16,
 	parameter W_SDRAM_ADDR     = 13,
@@ -67,6 +68,10 @@ module chistmas_soc #(
 	output wire                       sdram_phy_we_n_next,
 
 	// IO
+	output wire [N_GPIOS-1:0]         gpio_o,
+	output wire [N_GPIOS-1:0]         gpio_oe,
+	input  wire [N_GPIOS-1:0]         gpio_i,
+
 	output wire                       uart_tx,
 	input  wire                       uart_rx,
 
@@ -1087,12 +1092,6 @@ apb_splitter #(
 
 wire uart_irq;
 
-// Error response on currently-empty ports
-
-assign gpio_prdata   = 32'h00000000;
-assign gpio_pready   = 1'b1;
-assign gpio_pslverr  = 1'b1;
-
 ahbl_sdram #(
 	.COLUMN_BITS     (10),
 	.ROW_BITS        (13),
@@ -1207,6 +1206,25 @@ spi_mini #(
 	.cs_n         (spi0_cs_n)
 );
 
+gpio #(
+	.N_GPIOS (N_GPIOS)
+) gpio_u (
+	.clk          (clk_sys),
+	.rst_n        (rst_n_sys),
+
+	.apbs_psel    (gpio_psel),
+	.apbs_penable (gpio_penable),
+	.apbs_pwrite  (gpio_pwrite),
+	.apbs_paddr   (gpio_paddr),
+	.apbs_pwdata  (gpio_pwdata),
+	.apbs_prdata  (gpio_prdata),
+	.apbs_pready  (gpio_pready),
+	.apbs_pslverr (gpio_pslverr),
+
+	.o            (gpio_o),
+	.oe           (gpio_oe),
+	.i            (gpio_i)
+);
 
 assign irq = {31'h0, uart_irq};
 

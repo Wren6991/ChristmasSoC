@@ -1,0 +1,19 @@
+name: gpio
+bus:  apb
+addr: 16
+data: 32
+params:
+  N_GPIOS: 8
+regs:
+  - name: o
+    info: GPIO output register
+    bits:
+      - {b: [N_GPIOS - 1, 0], access: rw}
+  - name: oe
+    info: GPIO output enable register
+    bits:
+      - {b: [N_GPIOS - 1, 0], access: rw}
+  - name: i
+    info: GPIO input register
+    bits:
+      - {b: [N_GPIOS - 1, 0], access: rov}

@@ -47,7 +47,7 @@ wire                       sdram_phy_cas_n_next;
 wire                       sdram_phy_we_n_next;
 
 
-chistmas_soc #(
+christmas_soc #(
 	.DTM_TYPE         ("JTAG"),
 	.TCM_SIZE_BYTES   (4096),
 	.TCM_PRELOAD_FILE ("bootloader32.hex"),

@@ -855,9 +855,16 @@ wire              cache_dst_hresp;
 wire [W_DATA-1:0] cache_dst_hwdata;
 wire [W_DATA-1:0] cache_dst_hrdata;
 
+// Minimise cache address size to save tag memory size, routing etc. Need to
+// be able to address 64 MiB SDRAM, plus extra bit to select between SDRAM
+// and IO.
+localparam W_CACHE_ADDR = 27;
+
+assign cache_dst_haddr[W_ADDR-1:W_CACHE_ADDR] = {W_ADDR-W_CACHE_ADDR{1'b0}};
+
 ahb_cache_writeback #(
 	.N_WAYS           (1                    ),
-	.W_ADDR           (W_ADDR               ),
+	.W_ADDR           (W_CACHE_ADDR         ),
 	.W_DATA           (W_DATA               ),
 	.W_LINE           (128                  ), // 8-beat bursts on 16b SDRAM bus. Minimum efficient burst.
 	.DEPTH            (CACHE_SIZE_BYTES / 16),
@@ -871,7 +878,7 @@ ahb_cache_writeback #(
 	.src_hready      (cache_src_hready),
 	.src_hresp       (cache_src_hresp),
 	.src_hexokay     (cache_src_hexokay),
-	.src_haddr       (cache_src_haddr),
+	.src_haddr       (cache_src_haddr[W_CACHE_ADDR-1:0]),
 	.src_hwrite      (cache_src_hwrite),
 	.src_htrans      (cache_src_htrans),
 	.src_hsize       (cache_src_hsize),
@@ -887,7 +894,7 @@ ahb_cache_writeback #(
 	.dst_hready_resp (cache_dst_hready_resp),
 	.dst_hready      (cache_dst_hready),
 	.dst_hresp       (cache_dst_hresp),
-	.dst_haddr       (cache_dst_haddr),
+	.dst_haddr       (cache_dst_haddr[W_CACHE_ADDR-1:0]),
 	.dst_hwrite      (cache_dst_hwrite),
 	.dst_htrans      (cache_dst_htrans),
 	.dst_hsize       (cache_dst_hsize),
@@ -934,8 +941,8 @@ ahbl_splitter #(
 	.N_PORTS     (2),
 	.W_ADDR      (W_ADDR),
 	.W_DATA      (W_DATA),
-	.ADDR_MAP    (64'h0c000000_08000000),
-	.ADDR_MASK   (64'h0c000000_0c000000)
+	.ADDR_MAP    (64'h04000000_00000000),
+	.ADDR_MASK   (64'h04000000_04000000)
 ) split_cache (
 	.clk             (clk_sys       ),
 	.rst_n           (rst_n_sys     ),
